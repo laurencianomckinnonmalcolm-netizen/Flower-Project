@@ -1,0 +1,361 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>The Garden</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,600;1,400&family=Nunito:wght@400;600;700&display=swap');
+
+  :root{
+    --night-deep:#1C1330;
+    --night-mid:#2A1E42;
+    --pink:#F6A9C6;
+    --pink-soft:#FBD3E3;
+    --white-petal:#FDF8F5;
+    --dawn-gold:#F6D9A8;
+    --dawn-peach:#F3B999;
+    --text-light:#F3ECF7;
+    --text-muted:#B7A7CC;
+    --plum-text:#3E2A4D;
+  }
+
+  *{box-sizing:border-box; -webkit-tap-highlight-color:transparent;}
+  html,body{height:100%; margin:0;}
+  body{
+    font-family:'Nunito', sans-serif;
+    min-height:100vh;
+    overflow-x:hidden;
+    background: radial-gradient(ellipse at 50% 0%, var(--night-mid), var(--night-deep) 65%);
+    color:var(--text-light);
+    transition: background 2.4s ease;
+  }
+  body.dawn{
+    background: radial-gradient(ellipse at 50% 0%, var(--dawn-peach), var(--dawn-gold) 70%);
+    color:var(--plum-text);
+  }
+
+  h1,h2,h3{font-family:'Cormorant Garamond', serif; font-weight:600; margin:0;}
+
+  /* ---------- SETUP MODE ---------- */
+  #setup{
+    min-height:100vh; display:flex; align-items:center; justify-content:center; padding:24px;
+  }
+  #setup.hidden{display:none;}
+  .setup-card{
+    max-width:420px; width:100%; background:rgba(255,255,255,0.05); border:1px solid rgba(255,255,255,0.1);
+    border-radius:22px; padding:32px 26px; backdrop-filter: blur(6px);
+  }
+  .setup-card h1{font-size:30px; margin-bottom:8px;}
+  .setup-card p.lead{color:var(--text-muted); font-size:14.5px; line-height:1.6; margin-bottom:22px;}
+  label{display:block; font-size:12px; letter-spacing:0.6px; text-transform:uppercase; color:var(--text-muted); margin-bottom:6px; margin-top:18px;}
+  input[type=text], input[type=password], textarea{
+    width:100%; background:rgba(255,255,255,0.07); border:1px solid rgba(255,255,255,0.15);
+    color:var(--text-light); padding:13px 14px; border-radius:12px; font-size:15px; font-family:'Nunito',sans-serif;
+    outline:none; resize:vertical;
+  }
+  input:focus, textarea:focus{border-color: var(--pink);}
+  textarea{min-height:110px; line-height:1.5;}
+  .btn{
+    font-family:'Nunito',sans-serif; border:none; cursor:pointer; border-radius:12px; font-weight:700;
+    padding:14px 20px; font-size:15px; width:100%; margin-top:22px;
+    background:linear-gradient(135deg, var(--pink), #e88bb0); color:#3a1226;
+  }
+  .btn:disabled{opacity:0.4; cursor:default;}
+  .link-out{
+    margin-top:18px; display:none; flex-direction:column; gap:10px;
+  }
+  .link-out.show{display:flex;}
+  .link-box{
+    background:rgba(0,0,0,0.25); border:1px solid rgba(255,255,255,0.12); border-radius:10px;
+    padding:11px 12px; font-size:12.5px; word-break:break-all; color:var(--text-muted);
+  }
+  .btn-secondary{
+    background:rgba(255,255,255,0.1); color:var(--text-light); font-weight:600; font-size:13.5px;
+    padding:10px 14px; border-radius:10px; border:1px solid rgba(255,255,255,0.15); cursor:pointer;
+  }
+  .fine-print{font-size:11.5px; color:var(--text-muted); opacity:0.75; line-height:1.6; margin-top:16px;}
+
+  /* ---------- GATE MODE ---------- */
+  #gate{
+    min-height:100vh; display:flex; align-items:center; justify-content:center; padding:24px; position:relative; z-index:5;
+  }
+  #gate.hidden{display:none;}
+  .gate-card{ text-align:center; max-width:340px; width:100%; }
+  .gate-card h1{font-size:32px; margin-bottom:10px;}
+  .gate-card p{color:var(--text-muted); font-size:14px; margin-bottom:20px; line-height:1.6;}
+  #pw-input{ text-align:center; letter-spacing:2px; }
+  .gate-error{ color:var(--pink); font-size:13px; margin-top:10px; min-height:18px; opacity:0; transition:opacity 0.3s ease; }
+  .gate-error.show{opacity:1;}
+  .shake{ animation: shake 0.4s ease; }
+  @keyframes shake{
+    0%,100%{transform:translateX(0);}
+    20%{transform:translateX(-8px);}
+    40%{transform:translateX(8px);}
+    60%{transform:translateX(-6px);}
+    80%{transform:translateX(6px);}
+  }
+
+  /* ---------- GARDEN (post-password) ---------- */
+  #garden{
+    display:none; position:relative; min-height:200vh;
+  }
+  #garden.show{display:block;}
+  #petal-field{
+    position:fixed; inset:0; overflow:hidden; pointer-events:none; z-index:2;
+  }
+  .petal{
+    position:absolute; top:-40px; will-change: transform, opacity;
+    animation-name: fall; animation-timing-function: linear; animation-iteration-count: infinite;
+  }
+  @keyframes fall{
+    0%{ transform: translateY(-10vh) translateX(0) rotate(0deg); opacity:0; }
+    8%{ opacity:1; }
+    92%{ opacity:1; }
+    100%{ transform: translateY(112vh) translateX(var(--drift, 40px)) rotate(340deg); opacity:0; }
+  }
+
+  .garden-stage{
+    position:relative; z-index:3; min-height:100vh; display:flex; flex-direction:column;
+    align-items:center; justify-content:center; text-align:center; padding:40px 24px;
+  }
+  .garden-stage h2{ font-size:34px; margin-bottom:14px; }
+  .garden-stage p{ color:var(--text-muted); font-size:15px; max-width:320px; line-height:1.7; }
+  .leave-hint{
+    position:absolute; bottom:34px; left:50%; transform:translateX(-50%);
+    font-size:12.5px; color:var(--text-muted); display:flex; flex-direction:column; align-items:center; gap:6px;
+    animation: floatHint 2.2s ease-in-out infinite;
+  }
+  @keyframes floatHint{ 0%,100%{transform:translate(-50%,0);} 50%{transform:translate(-50%,8px);} }
+  .leave-hint svg{ width:18px; height:18px; }
+
+  .message-stage{
+    position:relative; z-index:3; min-height:100vh; display:flex; align-items:center; justify-content:center;
+    padding:60px 26px; text-align:center;
+  }
+  .message-box{
+    max-width:480px; opacity:0; transform:translateY(18px); transition: opacity 1.1s ease, transform 1.1s ease;
+  }
+  .message-box.reveal{ opacity:1; transform:translateY(0); }
+  .message-box .eyebrow{ font-size:11.5px; letter-spacing:2px; text-transform:uppercase; color:var(--plum-text); opacity:0.6; margin-bottom:14px; }
+  .message-box .msg-text{
+    font-family:'Cormorant Garamond', serif; font-size:26px; font-style:italic; line-height:1.55; color:var(--plum-text);
+    white-space:pre-wrap;
+  }
+
+  @media (prefers-reduced-motion: reduce){
+    .petal, .leave-hint, .shake{ animation:none !important; }
+  }
+</style>
+</head>
+<body>
+
+  <!-- SETUP: shown when there's no config in the URL -->
+  <div id="setup">
+    <div class="setup-card">
+      <h1>Plant a garden</h1>
+      <p class="lead">Set a password and write a message. Whoever opens your link will need the password to make the flowers bloom — the message only reveals once they leave the garden.</p>
+
+      <label for="pw-set">Password</label>
+      <input type="text" id="pw-set" placeholder="e.g. sunflower" maxlength="40" autocomplete="off">
+
+      <label for="msg-set">Your message</label>
+      <textarea id="msg-set" placeholder="Write what you want them to find..." maxlength="600"></textarea>
+
+      <label for="base-url">Your published link</label>
+      <input type="text" id="base-url" placeholder="Paste the https:// link you got from Publish/Share here" autocomplete="off">
+      <div class="fine-print" style="margin-top:8px;">This page can't detect its own public address automatically once it's embedded in Claude's viewer, so paste it here — then "Create the garden" will build your shareable link correctly.</div>
+
+      <button class="btn" id="create-btn" disabled>Create the garden</button>
+
+      <div class="link-out" id="link-out">
+        <label style="margin-top:0;">Your link</label>
+        <div class="link-box" id="link-box"></div>
+        <button class="btn-secondary" id="copy-btn">Copy link</button>
+        <div class="fine-print">Heads up: the password and message are encoded in this link, not encrypted — anyone who inspects the link technically could decode them. Good for a sweet surprise, not for real secrets. Paste this link into tinyurl.com to shorten it before sending.</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- GATE: shown when config exists but not yet unlocked -->
+  <div id="gate" class="hidden">
+    <div class="gate-card">
+      <h1>A garden is waiting</h1>
+      <p>Enter the password to let it bloom.</p>
+      <input type="password" id="pw-input" placeholder="password">
+      <button class="btn" id="unlock-btn">Unlock</button>
+      <div class="gate-error" id="gate-error">That's not quite it — try again.</div>
+    </div>
+  </div>
+
+  <!-- GARDEN + MESSAGE: shown after correct password -->
+  <div id="garden">
+    <div id="petal-field"></div>
+    <div class="garden-stage">
+      <h2>The garden is blooming</h2>
+      <p>Stay a while, or go — either way, something's waiting for you.</p>
+      <div class="leave-hint">
+        <span>leave the garden</span>
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 4v16m0 0l-6-6m6 6l6-6"/></svg>
+      </div>
+    </div>
+    <div class="message-stage">
+      <div class="message-box" id="message-box">
+        <div class="eyebrow">for you</div>
+        <div class="msg-text" id="msg-text"></div>
+      </div>
+    </div>
+  </div>
+
+<script>
+(function(){
+  const el = id => document.getElementById(id);
+  const setup = el('setup'), gate = el('gate'), garden = el('garden');
+  const pwSet = el('pw-set'), msgSet = el('msg-set'), createBtn = el('create-btn');
+  const linkOut = el('link-out'), linkBox = el('link-box'), copyBtn = el('copy-btn');
+  const pwInput = el('pw-input'), unlockBtn = el('unlock-btn'), gateError = el('gate-error'), gateCard = document.querySelector('.gate-card');
+  const petalField = el('petal-field'), messageBox = el('message-box'), msgText = el('msg-text');
+
+  function b64encode(str){ return btoa(unescape(encodeURIComponent(str))); }
+  function b64decode(str){ return decodeURIComponent(escape(atob(str))); }
+
+  function getConfig(){
+    const hash = location.hash || '';
+    const m = hash.match(/cfg=([^&]+)/);
+    if(!m) return null;
+    try{
+      const json = b64decode(decodeURIComponent(m[1]));
+      const data = JSON.parse(json);
+      if(data && typeof data.p === 'string' && typeof data.m === 'string') return data;
+    }catch(e){}
+    return null;
+  }
+
+  const config = getConfig();
+
+  const baseUrlInput = el('base-url');
+
+  function checkFormReady(){
+    createBtn.disabled = !(pwSet.value.trim() && msgSet.value.trim());
+  }
+  pwSet.addEventListener('input', checkFormReady);
+  msgSet.addEventListener('input', checkFormReady);
+
+  createBtn.addEventListener('click', ()=>{
+    const payload = { p: pwSet.value.trim(), m: msgSet.value };
+    const encoded = encodeURIComponent(b64encode(JSON.stringify(payload)));
+
+    let base = baseUrlInput.value.trim();
+    if(!base){
+      // fall back to this page's own address, if it looks like a real reachable URL
+      const guess = location.href.split('#')[0];
+      if(guess.startsWith('http') && !guess.includes('srcdoc')){
+        base = guess;
+      }
+    }
+
+    if(!base || base.startsWith('file:') || base.includes('srcdoc') || base === 'null'){
+      linkOut.classList.add('show');
+      linkBox.textContent = "I can't build a working link yet — paste the https:// link you got from Publish/Share into the field above first, then click Create again.";
+      return;
+    }
+
+    // strip any existing hash/query the pasted link might carry
+    base = base.split('#')[0];
+
+    const url = base + '#cfg=' + encoded;
+    linkBox.textContent = url;
+    linkOut.classList.add('show');
+  });
+
+  copyBtn.addEventListener('click', ()=>{
+    const url = linkBox.textContent;
+    if(navigator.clipboard){
+      navigator.clipboard.writeText(url).then(()=>{
+        copyBtn.textContent = 'Copied!';
+        setTimeout(()=>copyBtn.textContent='Copy link', 1400);
+      }).catch(()=>{});
+    }
+  });
+
+  // ---------- Gate / garden flow ----------
+  if(config){
+    setup.classList.add('hidden');
+    gate.classList.remove('hidden');
+
+    function tryUnlock(){
+      if(pwInput.value === config.p){
+        gate.classList.add('hidden');
+        garden.classList.add('show');
+        msgText.textContent = config.m;
+        buildPetals();
+        setupLeaveDetection();
+      } else {
+        gateError.classList.add('show');
+        gateCard.classList.remove('shake');
+        void gateCard.offsetWidth;
+        gateCard.classList.add('shake');
+        pwInput.value = '';
+      }
+    }
+    unlockBtn.addEventListener('click', tryUnlock);
+    pwInput.addEventListener('keydown', e=>{ if(e.key==='Enter') tryUnlock(); });
+  } else {
+    gate.classList.add('hidden');
+  }
+
+  function buildPetals(){
+    const count = 45;
+    for(let i=0;i<count;i++){
+      const petal = document.createElement('div');
+      petal.className = 'petal';
+      const isPink = Math.random() < 0.55;
+      const size = 45 + Math.random()*55;
+      petal.style.left = Math.random()*100 + 'vw';
+      petal.style.width = size+'px';
+      petal.style.height = size+'px';
+      petal.style.setProperty('--drift', (Math.random()*220-110)+'px');
+      const dur = 8 + Math.random()*10;
+      petal.style.animationDuration = dur+'s';
+      petal.style.animationDelay = (Math.random()*dur)+'s';
+      petal.innerHTML = flowerSVG(isPink);
+      petalField.appendChild(petal);
+    }
+  }
+
+  function flowerSVG(isPink){
+    const c1 = isPink ? '#F6A9C6' : '#FDF8F5';
+    const c2 = isPink ? '#EE84AE' : '#EFE3DC';
+    return '<svg viewBox="0 0 40 40" width="100%" height="100%">'+
+      '<g>'+
+        '<circle cx="20" cy="10" r="7" fill="'+c1+'" opacity="0.95"/>'+
+        '<circle cx="30" cy="20" r="7" fill="'+c1+'" opacity="0.95"/>'+
+        '<circle cx="20" cy="30" r="7" fill="'+c1+'" opacity="0.95"/>'+
+        '<circle cx="10" cy="20" r="7" fill="'+c1+'" opacity="0.95"/>'+
+        '<circle cx="20" cy="20" r="6" fill="'+c2+'"/>'+
+      '</g>'+
+    '</svg>';
+  }
+
+  // ---------- Leave detection: scrolling down, or switching away, reveals the message ----------
+  let revealed = false;
+  function revealMessage(){
+    if(revealed) return;
+    revealed = true;
+    document.body.classList.add('dawn');
+    messageBox.classList.add('reveal');
+  }
+
+  function setupLeaveDetection(){
+    window.addEventListener('scroll', ()=>{
+      if(window.scrollY > window.innerHeight * 0.6) revealMessage();
+    });
+    document.addEventListener('visibilitychange', ()=>{
+      if(document.hidden) revealMessage();
+    });
+    window.addEventListener('blur', revealMessage);
+  }
+})();
+</script>
+</body>
+</html>
