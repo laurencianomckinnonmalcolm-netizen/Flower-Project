@@ -24,7 +24,8 @@
   html,body{height:100%; margin:0;}
   body{
     font-family:'Nunito', sans-serif;
-    min-height:100vh;
+    min-height:100vh; min-height:100svh;
+    min-height:100svh;
     overflow-x:hidden;
     background: radial-gradient(ellipse at 50% 0%, var(--night-mid), var(--night-deep) 65%);
     color:var(--text-light);
@@ -39,7 +40,7 @@
 
   /* ---------- SETUP MODE ---------- */
   #setup{
-    min-height:100vh; display:flex; align-items:center; justify-content:center; padding:24px;
+    min-height:100vh; min-height:100svh; display:flex; align-items:center; justify-content:center; padding:24px;
   }
   #setup.hidden{display:none;}
   .setup-card{
@@ -51,14 +52,14 @@
   label{display:block; font-size:12px; letter-spacing:0.6px; text-transform:uppercase; color:var(--text-muted); margin-bottom:6px; margin-top:18px;}
   input[type=text], input[type=password], textarea{
     width:100%; background:rgba(255,255,255,0.07); border:1px solid rgba(255,255,255,0.15);
-    color:var(--text-light); padding:13px 14px; border-radius:12px; font-size:15px; font-family:'Nunito',sans-serif;
-    outline:none; resize:vertical;
+    color:var(--text-light); padding:13px 14px; border-radius:12px; font-size:16px; font-family:'Nunito',sans-serif;
+    outline:none; resize:vertical; -webkit-appearance:none; appearance:none;
   }
   input:focus, textarea:focus{border-color: var(--pink);}
   textarea{min-height:110px; line-height:1.5;}
   .btn{
     font-family:'Nunito',sans-serif; border:none; cursor:pointer; border-radius:12px; font-weight:700;
-    padding:14px 20px; font-size:15px; width:100%; margin-top:22px;
+    padding:14px 20px; font-size:16px; width:100%; margin-top:22px; min-height:48px;
     background:linear-gradient(135deg, var(--pink), #e88bb0); color:#3a1226;
   }
   .btn:disabled{opacity:0.4; cursor:default;}
@@ -78,7 +79,7 @@
 
   /* ---------- GATE MODE ---------- */
   #gate{
-    min-height:100vh; display:flex; align-items:center; justify-content:center; padding:24px; position:relative; z-index:5;
+    min-height:100vh; min-height:100svh; display:flex; align-items:center; justify-content:center; padding:24px; position:relative; z-index:5;
   }
   #gate.hidden{display:none;}
   .gate-card{ text-align:center; max-width:340px; width:100%; }
@@ -116,7 +117,7 @@
   }
 
   .garden-stage{
-    position:relative; z-index:3; min-height:100vh; display:flex; flex-direction:column;
+    position:relative; z-index:3; min-height:100vh; min-height:100svh; display:flex; flex-direction:column;
     align-items:center; justify-content:center; text-align:center; padding:40px 24px;
   }
   .garden-stage h2{ font-size:34px; margin-bottom:14px; }
@@ -130,7 +131,7 @@
   .leave-hint svg{ width:18px; height:18px; }
 
   .message-stage{
-    position:relative; z-index:3; min-height:100vh; display:flex; align-items:center; justify-content:center;
+    position:relative; z-index:3; min-height:100vh; min-height:100svh; display:flex; align-items:center; justify-content:center;
     padding:60px 26px; text-align:center;
   }
   .message-box{
@@ -141,6 +142,14 @@
   .message-box .msg-text{
     font-family:'Cormorant Garamond', serif; font-size:26px; font-style:italic; line-height:1.55; color:var(--plum-text);
     white-space:pre-wrap;
+  }
+
+  @media (max-width: 380px){
+    .setup-card{ padding:26px 20px; }
+    .setup-card h1{ font-size:26px; }
+    .gate-card h1{ font-size:27px; }
+    .garden-stage h2{ font-size:28px; }
+    .message-box .msg-text{ font-size:22px; }
   }
 
   @media (prefers-reduced-motion: reduce){
@@ -157,7 +166,7 @@
       <p class="lead">Set a password and write a message. Whoever opens your link will need the password to make the flowers bloom — the message only reveals once they leave the garden.</p>
 
       <label for="pw-set">Password</label>
-      <input type="text" id="pw-set" placeholder="e.g. sunflower" maxlength="40" autocomplete="off">
+      <input type="text" id="pw-set" placeholder="e.g. sunflower" maxlength="40" autocomplete="off" autocapitalize="off" autocorrect="off" spellcheck="false">
 
       <label for="msg-set">Your message</label>
       <textarea id="msg-set" placeholder="Write what you want them to find..." maxlength="600"></textarea>
@@ -182,7 +191,7 @@
     <div class="gate-card">
       <h1>A garden is waiting</h1>
       <p>Enter the password to let it bloom.</p>
-      <input type="password" id="pw-input" placeholder="password">
+      <input type="password" id="pw-input" placeholder="password" autocomplete="off" autocapitalize="off" autocorrect="off" spellcheck="false">
       <button class="btn" id="unlock-btn">Unlock</button>
       <div class="gate-error" id="gate-error">That's not quite it — try again.</div>
     </div>
